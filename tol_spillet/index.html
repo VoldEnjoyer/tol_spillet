@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sigma Banan Mafia Quest - 3D Edition</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #2c1810, #8b4513);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            color: white;
+        }
+
+        #gameContainer {
+            position: relative;
+            border: 3px solid #ffd700;
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.7);
+            width: 1000px;
+            height: 700px;
+        }
+
+        #gameCanvas {
+            background: #1a1a2e;
+            border-radius: 7px;
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        #loadingScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #ff6b35, #f7931e, #ffcc02);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 7px;
+            z-index: 1000;
+            animation: backgroundShift 3s ease-in-out infinite;
+        }
+
+        @keyframes backgroundShift {
+            0%, 100% { background: linear-gradient(45deg, #ff6b35, #f7931e, #ffcc02); }
+            50% { background: linear-gradient(45deg, #ffcc02, #ff6b35, #f7931e); }
+        }
+
+        .banana {
+            font-size: 120px;
+            animation: spin 1.5s linear infinite, bounce 2s ease-in-out infinite;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg) scale(1); }
+            to { transform: rotate(360deg) scale(1.1); }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .loading-text {
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.8);
+            animation: pulse 1.5s ease-in-out infinite;
+            margin-bottom: 10px;
+        }
+
+        .sigma-text {
+            color: #ffd700;
+            font-size: 16px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        @keyframes glow {
+            0%, 100% { text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8), 0 0 10px rgba(255, 215, 0, 0.5); }
+            50% { text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 215, 0, 1); }
+        }
+
+        #ui {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            font-size: 14px;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #ffd700;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+        }
+
+        #questLog {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: white;
+            font-size: 12px;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #4CAF50;
+            max-width: 250px;
+            box-shadow: 0 0 15px rgba(76, 175, 80, 0.3);
+        }
+
+        #instructions {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            text-align: center;
+            font-size: 12px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #ff6b35;
+            z-index: 100;
+            box-shadow: 0 0 15px rgba(255, 107, 53, 0.3);
+        }
+
+        #crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        .crosshair-line {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .crosshair-h {
+            width: 20px;
+            height: 2px;
+            top: 9px;
+            left: 0;
+        }
+
+        .crosshair-v {
+            width: 2px;
+            height: 20px;
+            top: 0;
+            left: 9px;
+        }
+
+        #gameOver {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            border-radius: 7px;
+        }
+
+        .victory-text {
+            font-size: 48px;
+            color: #ffd700;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.8);
+            margin-bottom: 20px;
+            animation: victory 2s ease-in-out infinite;
+        }
+
+        @keyframes victory {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas"></canvas>
+        
+        <div id="loadingScreen">
+            <div class="banana">🍌</div>
+            <div class="loading-text">Sigma Banan Mafia Quest</div>
+            <div class="sigma-text">3D First Person Edition</div>
+            <div style="color: white; font-size: 16px; margin-top: 20px;">Loading the ultimate sigma experience...</div>
+        </div>
+
+        <div id="crosshair" style="display: none;">
+            <div class="crosshair-line crosshair-h"></div>
+            <div class="crosshair-line crosshair-v"></div>
+        </div>
+
+        <div id="ui" style="display: none;">
+            <div style="color: #ffd700; font-size: 16px; margin-bottom: 10px;">💪 SIGMA STATS</div>
+            <div>❤️ HP: <span id="playerHP">100</span>/100</div>
+            <div>💪 Styrke: <span id="playerStrength">10</span></div>
+            <div>🎯 Quests: <span id="questCount">0</span>/5</div>
+            <div>🦵 Ballekick Level: <span id="ballKickLevel">1</span></div>
+            <div>⚡ XP: <span id="playerXP">0</span></div>
+        </div>
+
+        <div id="questLog" style="display: none;">
+            <div style="color: #4CAF50; font-size: 14px; margin-bottom: 8px;">📋 AKTIV QUEST</div>
+            <div id="currentQuest">Snakk med Don Luigi for å få din første oppdrag!</div>
+        </div>
+
+        <div id="instructions" style="display: none;">
+            <div><strong>🎮 SIGMA CONTROLS 🎮</strong></div>
+            <div>WASD - Beveg deg | Mouse - Se rundt | E - Snakk/Interakt</div>
+            <div>Spacebar - Ballekick Attack! | ESC - Meny | SHIFT - Løp</div>
+        </div>
+
+        <div id="gameOver">
+            <div class="victory-text">🍌 SIGMA VICTORY! 🍌</div>
+            <div style="color: white; font-size: 20px; text-align: center;">
+                Du har beseiret Sigma Banan Mafia Boss!<br>
+                Du er nå den ultimate sigma!
+            </div>
+        </div>
+    </div>
+
+    <!-- Three.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/PointerLockControls.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
